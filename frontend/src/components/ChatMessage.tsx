@@ -31,8 +31,9 @@ function ensureCompleteSvg(content: string): string {
   // If already has SVG tag, return as is
   if (trimmed.startsWith('<svg')) return trimmed
   // Wrap with SVG tag if it contains SVG elements
+  // Use default viewBox (1024x1024) for square canvas
   if (isSvgContent(content)) {
-    return `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">${trimmed}</svg>`
+    return `<svg viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">${trimmed}</svg>`
   }
   return trimmed
 }

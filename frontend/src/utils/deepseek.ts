@@ -38,9 +38,10 @@ export async function* chatWithDeepSeek(
   
   // Add assistant message with SVG prefix for continuation
   // This forces the model to always output SVG format
+  // Use default viewBox (1024x1024) for square canvas
   apiMessages.push({
     role: 'assistant',
-    content: '<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">',
+    content: '<svg viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">',
     prefix: true
   })
   

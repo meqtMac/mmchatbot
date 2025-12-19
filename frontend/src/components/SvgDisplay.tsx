@@ -46,6 +46,10 @@ export function SvgDisplay({ svgContent, isStreaming = false }: SvgDisplayProps)
   
   // Handle manual view mode selection
   const handleViewModeChange = (mode: 'code' | 'render') => {
+    // Prevent switching to render mode during streaming
+    if (isStreaming && mode === 'render') {
+      return
+    }
     userSelectedMode.current = true
     setViewMode(mode)
   }
@@ -66,7 +70,7 @@ export function SvgDisplay({ svgContent, isStreaming = false }: SvgDisplayProps)
         rawSvg = svgContent // Use content as-is during streaming
       } else {
         // Even if empty, show placeholder during streaming
-        rawSvg = '<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">'
+        rawSvg = '<svg viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">'
       }
     } else {
       // Not streaming and no complete SVG found
@@ -87,6 +91,8 @@ export function SvgDisplay({ svgContent, isStreaming = false }: SvgDisplayProps)
           size="sm"
           onClick={() => handleViewModeChange('render')}
           className="flex-1"
+          disabled={isStreaming}
+          title={isStreaming ? '流式输出中，请等待完成' : '切换到渲染视图'}
         >
           <Eye className="w-4 h-4 mr-2" />
           Render
@@ -106,16 +112,18 @@ export function SvgDisplay({ svgContent, isStreaming = false }: SvgDisplayProps)
       <div className="p-4">
         {viewMode === 'render' ? (
           // Rendered SVG view
-          <div className="flex items-center justify-center bg-background rounded border border-border p-4">
+          // Use CSS to make SVG scale to container width while preserving aspect ratio
+          // Match code view width with w-full and padding
+          <div className="w-full bg-background rounded border border-border p-4">
             <div
-              className="w-full max-w-full"
+              className="w-full [&>svg]:w-full [&>svg]:h-auto [&>svg]:max-w-full"
               dangerouslySetInnerHTML={{ __html: normalizedSvg }}
             />
           </div>
         ) : (
           // Code view with syntax highlighting
           // Show code even if SVG is incomplete (during streaming)
-          <div className="rounded overflow-hidden max-w-full overflow-x-auto">
+          <div className="rounded overflow-hidden max-w-full overflow-x-auto w-full">
             <SyntaxHighlighter
               language="xml"
               style={vscDarkPlus}

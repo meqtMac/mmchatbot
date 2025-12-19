@@ -28,6 +28,7 @@ export function extractSvg(content: string): string | null {
  * Normalize SVG content
  * Removes width and height attributes, ensures viewBox is present
  * Makes SVG scalable and responsive
+ * Adds preserveAspectRatio to allow scaling without modifying viewBox
  * 
  * @param svgContent - Raw SVG content string
  * @returns Normalized SVG string with viewBox and without width/height
@@ -55,12 +56,19 @@ export function normalizeSvg(svgContent: string): string {
   delete attrMap.height
 
   // Ensure viewBox exists, add default if missing
+  // Use default viewBox (1024x1024) for square canvas
   if (!attrMap.viewbox && !attrMap.viewBox) {
-    attrMap.viewBox = '0 0 100 100'
+    attrMap.viewBox = '0 0 1024 1024'
   } else if (attrMap.viewbox && !attrMap.viewBox) {
     // Handle case-insensitive viewbox attribute
     attrMap.viewBox = attrMap.viewbox
     delete attrMap.viewbox
+  }
+  
+  // Add preserveAspectRatio if not present to allow scaling
+  // "xMidYMid meet" keeps aspect ratio and centers the content
+  if (!attrMap.preserveaspectratio && !attrMap.preserveAspectRatio) {
+    attrMap.preserveAspectRatio = 'xMidYMid meet'
   }
 
   // Reconstruct attributes string

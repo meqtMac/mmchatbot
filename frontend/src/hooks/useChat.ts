@@ -55,7 +55,8 @@ export function useChat(apiKey: string) {
 
       // Stream response and update UI incrementally
       // Start with SVG prefix since we're using prefix continuation
-      const svgPrefix = '<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">'
+      // Use default viewBox (1024x1024) for square canvas
+      const svgPrefix = '<svg viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">'
       let fullContent = svgPrefix
       
       // Update immediately with prefix so SVG detection works
