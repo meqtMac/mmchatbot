@@ -7,6 +7,8 @@ export interface DeepSeekMessage {
   role: 'user' | 'assistant' | 'system'
   /** Message content */
   content: string
+  /** Prefix mode for continuation (Beta feature) */
+  prefix?: boolean
 }
 
 /**
@@ -14,6 +16,9 @@ export interface DeepSeekMessage {
  * 
  * This function uses an async generator to stream responses from DeepSeek API.
  * It processes Server-Sent Events (SSE) format and yields content chunks as they arrive.
+ * 
+ * Uses DeepSeek Beta API with prefix continuation to always return SVG format.
+ * Automatically appends SVG prefix to force SVG output regardless of user input.
  * 
  * @param apiKey - DeepSeek API key for authentication
  * @param messages - Array of conversation messages
@@ -28,8 +33,19 @@ export async function* chatWithDeepSeek(
   apiKey: string,
   messages: DeepSeekMessage[]
 ): AsyncGenerator<string, void, unknown> {
-  // Send streaming request to DeepSeek API
-  const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+  // Prepare messages with SVG prefix for continuation mode
+  const apiMessages: DeepSeekMessage[] = [...messages]
+  
+  // Add assistant message with SVG prefix for continuation
+  // This forces the model to always output SVG format
+  apiMessages.push({
+    role: 'assistant',
+    content: '<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">',
+    prefix: true
+  })
+  
+  // Use Beta API endpoint for prefix continuation feature
+  const response = await fetch('https://api.deepseek.com/beta/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -37,9 +53,10 @@ export async function* chatWithDeepSeek(
     },
     body: JSON.stringify({
       model: 'deepseek-chat',
-      messages,
+      messages: apiMessages,
       stream: true, // Enable streaming response
       temperature: 0.7,
+      stop: ['</svg>'], // Stop when SVG tag closes
     }),
   })
 

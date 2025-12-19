@@ -54,10 +54,36 @@ export function useChat(apiKey: string) {
       }))
 
       // Stream response and update UI incrementally
-      let fullContent = ''
+      // Start with SVG prefix since we're using prefix continuation
+      const svgPrefix = '<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">'
+      let fullContent = svgPrefix
+      
+      // Update immediately with prefix so SVG detection works
+      setMessages((prev) => {
+        const newMessages = [...prev]
+        newMessages[newMessages.length - 1] = {
+          ...assistantMessage,
+          content: fullContent,
+        }
+        return newMessages
+      })
+      
       for await (const chunk of chatWithDeepSeek(apiKey, history)) {
         fullContent += chunk
         // Update the last message (assistant message) with accumulated content
+        setMessages((prev) => {
+          const newMessages = [...prev]
+          newMessages[newMessages.length - 1] = {
+            ...assistantMessage,
+            content: fullContent,
+          }
+          return newMessages
+        })
+      }
+      
+      // Ensure SVG is closed
+      if (!fullContent.includes('</svg>')) {
+        fullContent += '</svg>'
         setMessages((prev) => {
           const newMessages = [...prev]
           newMessages[newMessages.length - 1] = {
