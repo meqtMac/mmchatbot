@@ -4,13 +4,24 @@ import { Textarea } from '@/components/ui/textarea'
 import { Send } from 'lucide-react'
 
 interface ChatInputProps {
+  /** Callback function when message is sent */
   onSend: (message: string) => void
+  /** Whether the input is disabled */
   disabled?: boolean
 }
 
+/**
+ * Chat input component
+ * Provides a textarea for message input with send button
+ * Supports Enter to send, Shift+Enter for new line
+ */
 export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const [input, setInput] = useState('')
 
+  /**
+   * Handle send button click
+   * Sends the message if input is not empty and not disabled
+   */
   const handleSend = () => {
     if (input.trim() && !disabled) {
       onSend(input.trim())
@@ -18,6 +29,11 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
     }
   }
 
+  /**
+   * Handle keyboard events
+   * Enter: send message
+   * Shift+Enter: new line
+   */
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()

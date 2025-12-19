@@ -2,21 +2,35 @@ import { useState, useCallback } from 'react'
 import { Message } from '@/types/chat'
 import { chatWithDeepSeek } from '@/utils/deepseek'
 
+/**
+ * Custom hook for managing chat functionality
+ * Handles message state, streaming responses, and error management
+ * 
+ * @param apiKey - DeepSeek API key for authentication
+ * @returns Object containing messages, loading state, error, and control functions
+ */
 export function useChat(apiKey: string) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  /**
+   * Send a message to DeepSeek API and stream the response
+   * Creates a typing effect by updating the assistant message incrementally
+   * 
+   * @param content - User message content
+   */
   const sendMessage = useCallback(async (content: string) => {
+    // Validate API key
     if (!apiKey) {
-      setError('请先设置 API Key')
+      setError('Please set API Key first')
       return
     }
 
     setIsLoading(true)
     setError(null)
 
-    // 添加用户消息
+    // Add user message to the conversation
     const userMessage: Message = {
       role: 'user',
       content,
@@ -24,7 +38,7 @@ export function useChat(apiKey: string) {
     }
     setMessages((prev) => [...prev, userMessage])
 
-    // 创建助手消息占位符
+    // Create placeholder for assistant message (will be updated incrementally)
     const assistantMessage: Message = {
       role: 'assistant',
       content: '',
@@ -33,16 +47,17 @@ export function useChat(apiKey: string) {
     setMessages((prev) => [...prev, assistantMessage])
 
     try {
-      // 准备消息历史
+      // Prepare message history for API (without timestamps)
       const history = [...messages, userMessage].map((msg) => ({
         role: msg.role,
         content: msg.content,
       }))
 
-      // 流式接收响应
+      // Stream response and update UI incrementally
       let fullContent = ''
       for await (const chunk of chatWithDeepSeek(apiKey, history)) {
         fullContent += chunk
+        // Update the last message (assistant message) with accumulated content
         setMessages((prev) => {
           const newMessages = [...prev]
           newMessages[newMessages.length - 1] = {
@@ -53,14 +68,17 @@ export function useChat(apiKey: string) {
         })
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '发送消息失败')
-      // 移除失败的助手消息
+      setError(err instanceof Error ? err.message : 'Failed to send message')
+      // Remove failed assistant message placeholder
       setMessages((prev) => prev.slice(0, -1))
     } finally {
       setIsLoading(false)
     }
   }, [apiKey, messages])
 
+  /**
+   * Clear all messages and reset error state
+   */
   const clearMessages = useCallback(() => {
     setMessages([])
     setError(null)

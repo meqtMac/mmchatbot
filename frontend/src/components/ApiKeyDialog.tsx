@@ -4,14 +4,26 @@ import { Input } from '@/components/ui/input'
 import * as Dialog from '@radix-ui/react-dialog'
 
 interface ApiKeyDialogProps {
+  /** Callback function when API key is saved */
   onSave: (apiKey: string) => void
+  /** Current API key value (if exists) */
   currentKey?: string
 }
 
+/**
+ * API Key dialog component
+ * Modal dialog for entering and saving DeepSeek API key
+ * Automatically opens if no API key is set
+ */
 export function ApiKeyDialog({ onSave, currentKey }: ApiKeyDialogProps) {
   const [apiKey, setApiKey] = useState(currentKey || '')
+  // Open dialog automatically if no API key is set
   const [open, setOpen] = useState(!currentKey)
 
+  /**
+   * Handle save button click
+   * Validates and saves the API key
+   */
   const handleSave = () => {
     if (apiKey.trim()) {
       onSave(apiKey.trim())

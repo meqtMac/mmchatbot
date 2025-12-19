@@ -11,19 +11,26 @@ import { Trash2 } from 'lucide-react'
 
 const API_KEY_STORAGE_KEY = 'deepseek_api_key'
 
+/**
+ * Main App component
+ * Manages the overall application state and layout
+ */
 function App() {
   const [apiKey, setApiKey] = useState<string>('')
   const { messages, isLoading, error, sendMessage, clearMessages } = useChat(apiKey)
-  useTheme() // 初始化主题
+  useTheme() // Initialize theme system
 
+  // Load API key from localStorage on mount
   useEffect(() => {
-    // 从本地存储加载 API Key
     const savedKey = localStorage.getItem(API_KEY_STORAGE_KEY)
     if (savedKey) {
       setApiKey(savedKey)
     }
   }, [])
 
+  /**
+   * Handle API key save and persist to localStorage
+   */
   const handleSaveApiKey = (key: string) => {
     setApiKey(key)
     localStorage.setItem(API_KEY_STORAGE_KEY, key)
