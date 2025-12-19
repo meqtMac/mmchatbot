@@ -6,6 +6,8 @@ import { SvgDisplay } from './SvgDisplay'
 interface ChatMessageProps {
   /** Message data to display */
   message: Message
+  /** Whether this message is currently being streamed */
+  isStreaming?: boolean
 }
 
 /**
@@ -41,7 +43,7 @@ function ensureCompleteSvg(content: string): string {
  * User messages appear on the right, assistant messages on the left
  * All assistant messages are displayed as SVG (always SVG mode)
  */
-export function ChatMessage({ message }: ChatMessageProps) {
+export function ChatMessage({ message, isStreaming = false }: ChatMessageProps) {
   const isUser = message.role === 'user'
   // All assistant messages are SVG format (always SVG mode)
   const hasSvg = !isUser && isSvgContent(message.content)
@@ -70,7 +72,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
         }`}>
           {hasSvg ? (
             // Display SVG with special component
-            <SvgDisplay svgContent={displayContent} />
+            <SvgDisplay svgContent={displayContent} isStreaming={isStreaming} />
           ) : (
             // Regular text content
             <p className="whitespace-pre-wrap break-words">{message.content}</p>

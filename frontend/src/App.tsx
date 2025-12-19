@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { ApiKeyDialog } from '@/components/ApiKeyDialog'
 import { ChatMessage } from '@/components/ChatMessage'
 import { ChatInput } from '@/components/ChatInput'
@@ -62,17 +62,29 @@ function App() {
               <p className="text-sm">输入消息开始与 DeepSeek 对话</p>
             </div>
           )}
-          {messages.map((message, index) => (
-            <ChatMessage key={index} message={message} />
-          ))}
-          {isLoading && messages.length > 0 && (
-            <div className="flex gap-4 mb-6">
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                <div className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
-              </div>
-              <div className="text-muted-foreground">正在思考...</div>
-            </div>
-          )}
+          {messages.map((message, index) => {
+            const isLastMessage = index === messages.length - 1
+            const isStreamingMessage = message.isStreaming || (isLoading && isLastMessage)
+            // Only show loading indicator if it's the last message but has no content yet
+            const showLoadingIndicator = isLoading && isLastMessage && !message.content.trim()
+            
+            return (
+              <Fragment key={index}>
+                <ChatMessage 
+                  message={message} 
+                  isStreaming={isStreamingMessage}
+                />
+                {showLoadingIndicator && (
+                  <div className="flex gap-4 mb-6">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                      <div className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
+                    </div>
+                    <div className="text-muted-foreground">正在思考...</div>
+                  </div>
+                )}
+              </Fragment>
+            )
+          })}
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg mb-4">
               {error}

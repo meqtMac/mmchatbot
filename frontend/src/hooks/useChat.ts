@@ -59,11 +59,13 @@ export function useChat(apiKey: string) {
       let fullContent = svgPrefix
       
       // Update immediately with prefix so SVG detection works
+      // Mark as streaming during the stream
       setMessages((prev) => {
         const newMessages = [...prev]
         newMessages[newMessages.length - 1] = {
           ...assistantMessage,
           content: fullContent,
+          isStreaming: true,
         }
         return newMessages
       })
@@ -71,11 +73,13 @@ export function useChat(apiKey: string) {
       for await (const chunk of chatWithDeepSeek(apiKey, history)) {
         fullContent += chunk
         // Update the last message (assistant message) with accumulated content
+        // Keep isStreaming: true during streaming
         setMessages((prev) => {
           const newMessages = [...prev]
           newMessages[newMessages.length - 1] = {
             ...assistantMessage,
             content: fullContent,
+            isStreaming: true,
           }
           return newMessages
         })
@@ -84,15 +88,18 @@ export function useChat(apiKey: string) {
       // Ensure SVG is closed
       if (!fullContent.includes('</svg>')) {
         fullContent += '</svg>'
-        setMessages((prev) => {
-          const newMessages = [...prev]
-          newMessages[newMessages.length - 1] = {
-            ...assistantMessage,
-            content: fullContent,
-          }
-          return newMessages
-        })
       }
+      
+      // Mark streaming as complete
+      setMessages((prev) => {
+        const newMessages = [...prev]
+        newMessages[newMessages.length - 1] = {
+          ...assistantMessage,
+          content: fullContent,
+          isStreaming: false,
+        }
+        return newMessages
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message')
       // Remove failed assistant message placeholder

@@ -9,6 +9,8 @@ export interface Message {
   content: string
   /** Message timestamp (optional) */
   timestamp?: Date
+  /** Whether the message is currently being streamed (optional) */
+  isStreaming?: boolean
 }
 
 /**
